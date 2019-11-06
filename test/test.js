@@ -558,330 +558,344 @@ describe("checkMillionDollarIdea middleware", function() {
   });
 });
 
-// describe("/api/meetings routes", function() {
-//   let fakeDb = require("../server/db.js");
+describe("/api/meetings routes", function() {
+  let fakeDb = require("../server/db.js");
 
-//   describe("GET /api/meetings", function() {
-//     it("returns an array", function() {
-//       return request(app)
-//         .get("/api/meetings")
-//         .expect(200)
-//         .then(response => {
-//           expect(response.body).to.be.an.instanceOf(Array);
-//         });
-//     });
+  describe("GET /api/meetings", function() {
+    it("returns an array", function() {
+      return request(app)
+        .get("/api/meetings")
+        .expect(200)
+        .then(response => {
+          expect(response.body).to.be.an.instanceOf(Array);
+        });
+    });
 
-//     it("returns an array of all meetings", function() {
-//       return request(app)
-//         .get("/api/meetings")
-//         .expect(200)
-//         .then(response => {
-//           let length = fakeDb.getAllFromDatabase("meetings").length;
-//           expect(response.body.length).to.be.equal(length);
-//           response.body.forEach(minion => {
-//             expect(minion).to.have.ownProperty("time");
-//             expect(minion).to.have.ownProperty("date");
-//             expect(minion).to.have.ownProperty("day");
-//             expect(minion).to.have.ownProperty("note");
-//           });
-//         });
-//     });
-//   });
+    it("returns an array of all meetings", function() {
+      return request(app)
+        .get("/api/meetings")
+        .expect(200)
+        .then(response => {
+          let length = fakeDb.getAllFromDatabase("meetings").length;
+          expect(response.body.length).to.be.equal(length);
+          response.body.forEach(minion => {
+            expect(minion).to.have.ownProperty("time");
+            expect(minion).to.have.ownProperty("date");
+            expect(minion).to.have.ownProperty("day");
+            expect(minion).to.have.ownProperty("note");
+          });
+        });
+    });
+  });
 
-//   describe("POST /api/meetings", function() {
-//     it("should create a new meetings and return it", function() {
-//       return request(app)
-//         .post("/api/meetings")
-//         .expect(201)
-//         .then(response => response.body)
-//         .then(createdMeeting => {
-//           expect(createdMeeting).to.have.ownProperty("time");
-//           expect(createdMeeting).to.have.ownProperty("date");
-//           expect(createdMeeting).to.have.ownProperty("day");
-//           expect(createdMeeting).to.have.ownProperty("note");
-//         });
-//     });
+  describe("POST /api/meetings", function() {
+    it("should create a new meetings and return it", function() {
+      let newMeetingsObject = {
+        time: "00:22",
+        date: "2020-02-20T08:51:11.838Z",
+        day: "Thu Feb 20 2020",
+        note: "Codecademy Meetup"
+      };
+      return request(app)
+        .post("/api/meetings")
+        .send(newMeetingsObject)
+        .expect(201)
+        .then(response => response.body)
+        .then(createdMeeting => {
+          expect(createdMeeting).to.have.ownProperty("time");
+          expect(createdMeeting).to.have.ownProperty("date");
+          expect(createdMeeting).to.have.ownProperty("day");
+          expect(createdMeeting).to.have.ownProperty("note");
+        });
+    });
 
-//     it("should persist the created meeting to the database", function() {
-//       let initialMeetingsArray;
-//       let newlyCreatedMeeting;
-//       return request(app)
-//         .get("/api/meetings")
-//         .then(response => {
-//           initialMeetingsArray = response.body;
-//         })
-//         .then(() => {
-//           return request(app)
-//             .post("/api/meetings")
-//             .expect(201);
-//         })
-//         .then(response => response.body)
-//         .then(createdMeeting => {
-//           newlyCreatedMeeting = createdMeeting;
-//           return request(app).get("/api/meetings");
-//         })
-//         .then(response => response.body)
-//         .then(newMeetingsArray => {
-//           expect(newMeetingsArray.length).to.equal(
-//             initialMeetingsArray.length + 1
-//           );
-//           let createdMeetingFound = newMeetingsArray.some(meeting => {
-//             return meeting.id === newlyCreatedMeeting.id;
-//           });
-//           expect(createdMeetingFound).to.be.true;
-//         });
-//     });
-//   });
+    it("should persist the created meeting to the database", function() {
+      let initialMeetingsArray;
+      let newlyCreatedMeeting;
+      let newMeetingsObject = {
+        time: "00:22",
+        date: "2020-02-20T08:51:11.838Z",
+        day: "Thu Feb 20 2020",
+        note: "Codecademy Meetup"
+      };
+      return request(app)
+        .get("/api/meetings")
+        .then(response => {
+          initialMeetingsArray = response.body;
+        })
+        .then(() => {
+          return request(app)
+            .post("/api/meetings")
+            .send(newMeetingsObject)
+            .expect(201);
+        })
+        .then(response => response.body)
+        .then(createdMeeting => {
+          newlyCreatedMeeting = createdMeeting;
+          return request(app).get("/api/meetings");
+        })
+        .then(response => response.body)
+        .then(newMeetingsArray => {
+          expect(newMeetingsArray.length).to.equal(
+            initialMeetingsArray.length + 1
+          );
+          let createdMeetingFound = newMeetingsArray.some(meeting => {
+            return meeting.id === newlyCreatedMeeting.id;
+          });
+          expect(createdMeetingFound).to.be.true;
+        });
+    });
+  });
 
-//   describe("DELETE /api/meetings route", function() {
-//     it("deletes all meetings", function() {
-//       let initialMeetingsArray;
-//       return request(app)
-//         .get("/api/meetings")
-//         .then(response => {
-//           initialMeetingsArray = response.body;
-//         })
-//         .then(() => {
-//           return request(app)
-//             .delete("/api/meetings")
-//             .expect(204);
-//         })
-//         .then(() => {
-//           return request(app).get("/api/meetings");
-//         })
-//         .then(response => response.body)
-//         .then(afterDeleteIdeasArray => {
-//           expect(afterDeleteIdeasArray).to.be.an.instanceOf(Array);
-//           expect(afterDeleteIdeasArray).to.have.property("length", 0);
-//         });
-//     });
-//   });
-// });
+  describe("DELETE /api/meetings route", function() {
+    it("deletes all meetings", function() {
+      let initialMeetingsArray;
+      return request(app)
+        .get("/api/meetings")
+        .then(response => {
+          initialMeetingsArray = response.body;
+        })
+        .then(() => {
+          return request(app)
+            .delete("/api/meetings")
+            .expect(204);
+        })
+        .then(() => {
+          return request(app).get("/api/meetings");
+        })
+        .then(response => response.body)
+        .then(afterDeleteIdeasArray => {
+          expect(afterDeleteIdeasArray).to.be.an.instanceOf(Array);
+          expect(afterDeleteIdeasArray).to.have.property("length", 0);
+        });
+    });
+  });
+});
 
-// xdescribe("BONUS: /api/minions/:minionId/work routes", function() {
-//   let fakeDb = require("../server/db.js").db;
+xdescribe("BONUS: /api/minions/:minionId/work routes", function() {
+  let fakeDb = require("../server/db.js").db;
 
-//   describe("GET /api/minions/:minionId/work", function() {
-//     it("returns an array", function() {
-//       return request(app)
-//         .get("/api/minions/2/work")
-//         .expect(200)
-//         .then(response => {
-//           expect(response.body).to.be.an.instanceOf(Array);
-//         });
-//     });
+  describe("GET /api/minions/:minionId/work", function() {
+    it("returns an array", function() {
+      return request(app)
+        .get("/api/minions/2/work")
+        .expect(200)
+        .then(response => {
+          expect(response.body).to.be.an.instanceOf(Array);
+        });
+    });
 
-//     it("returns an array of all all work for the specified minion", function() {
-//       return request(app)
-//         .get("/api/minions/2/work")
-//         .then(response => response.body)
-//         .then(minionTwoWork => {
-//           minionTwoWork.forEach(work => {
-//             expect(work).to.have.property("minionId", "2");
-//           });
-//         });
-//     });
+    it("returns an array of all all work for the specified minion", function() {
+      return request(app)
+        .get("/api/minions/2/work")
+        .then(response => response.body)
+        .then(minionTwoWork => {
+          minionTwoWork.forEach(work => {
+            expect(work).to.have.property("minionId", "2");
+          });
+        });
+    });
 
-//     it("called with a non-numeric minion ID returns a 404 error", function() {
-//       return request(app)
-//         .get("/api/minions/notAnId/work")
-//         .expect(404);
-//     });
+    it("called with a non-numeric minion ID returns a 404 error", function() {
+      return request(app)
+        .get("/api/minions/notAnId/work")
+        .expect(404);
+    });
 
-//     it("called with an invalid ID minion returns a 404 error", function() {
-//       return request(app)
-//         .get("/api/minions/450/work")
-//         .expect(404);
-//     });
-//   });
+    it("called with an invalid ID minion returns a 404 error", function() {
+      return request(app)
+        .get("/api/minions/450/work")
+        .expect(404);
+    });
+  });
 
-//   describe("PUT /api/minions/:minionId/work/:workId", function() {
-//     it("updates the correct work and returns it", function() {
-//       let initialWork;
-//       let updatedWorkInfo;
-//       return request(app)
-//         .get("/api/minions/2/work")
-//         .then(response => response.body)
-//         .then(workArray => {
-//           initialWork = workArray[0];
-//         })
-//         .then(() => {
-//           updatedWorkInfo = Object.assign({}, initialWork, { hours: 45 });
-//           return request(app)
-//             .put(`/api/minions/2/work/${initialWork.id}`)
-//             .send(updatedWorkInfo);
-//         })
-//         .then(response => {
-//           expect(response.body).to.be.deep.equal(updatedWorkInfo);
-//         });
-//     });
+  describe("PUT /api/minions/:minionId/work/:workId", function() {
+    it("updates the correct work and returns it", function() {
+      let initialWork;
+      let updatedWorkInfo;
+      return request(app)
+        .get("/api/minions/2/work")
+        .then(response => response.body)
+        .then(workArray => {
+          initialWork = workArray[0];
+        })
+        .then(() => {
+          updatedWorkInfo = Object.assign({}, initialWork, { hours: 45 });
+          return request(app)
+            .put(`/api/minions/2/work/${initialWork.id}`)
+            .send(updatedWorkInfo);
+        })
+        .then(response => {
+          expect(response.body).to.be.deep.equal(updatedWorkInfo);
+        });
+    });
 
-//     it("updates the correct work item and persists to the database", function() {
-//       let initialWork;
-//       let updatedWorkInfo;
-//       return request(app)
-//         .get("/api/minions/2/work")
-//         .then(response => response.body)
-//         .then(workArray => {
-//           initialWork = workArray[0];
-//         })
-//         .then(() => {
-//           updatedWorkInfo = Object.assign({}, initialWork, {
-//             title: "Persistence Test"
-//           });
-//           return request(app)
-//             .put(`/api/minions/2/work/${initialWork.id}`)
-//             .send(updatedWorkInfo);
-//         })
-//         .then(() => {
-//           return request(app).get(`/api/minions/2/work`);
-//         })
-//         .then(response => response.body)
-//         .then(postUpdateWorkArray => {
-//           let updatedWorkObject = postUpdateWorkArray.find(
-//             work => work.id === initialWork.id
-//           );
-//           expect(updatedWorkObject).to.have.property(
-//             "title",
-//             "Persistence Test"
-//           );
-//         });
-//     });
+    it("updates the correct work item and persists to the database", function() {
+      let initialWork;
+      let updatedWorkInfo;
+      return request(app)
+        .get("/api/minions/2/work")
+        .then(response => response.body)
+        .then(workArray => {
+          initialWork = workArray[0];
+        })
+        .then(() => {
+          updatedWorkInfo = Object.assign({}, initialWork, {
+            title: "Persistence Test"
+          });
+          return request(app)
+            .put(`/api/minions/2/work/${initialWork.id}`)
+            .send(updatedWorkInfo);
+        })
+        .then(() => {
+          return request(app).get(`/api/minions/2/work`);
+        })
+        .then(response => response.body)
+        .then(postUpdateWorkArray => {
+          let updatedWorkObject = postUpdateWorkArray.find(
+            work => work.id === initialWork.id
+          );
+          expect(updatedWorkObject).to.have.property(
+            "title",
+            "Persistence Test"
+          );
+        });
+    });
 
-//     it("called with a non-numeric minion ID returns a 404 error", function() {
-//       return request(app)
-//         .put("/api/minions/notAnId")
-//         .expect(404);
-//     });
+    it("called with a non-numeric minion ID returns a 404 error", function() {
+      return request(app)
+        .put("/api/minions/notAnId")
+        .expect(404);
+    });
 
-//     it("called with an invalid minion ID returns a 404 error", function() {
-//       return request(app)
-//         .put("/api/minions/450")
-//         .expect(404);
-//     });
+    it("called with an invalid minion ID returns a 404 error", function() {
+      return request(app)
+        .put("/api/minions/450")
+        .expect(404);
+    });
 
-//     it("called with a non-numeric work ID returns a 404 error", function() {
-//       return request(app)
-//         .put("/api/minions/notAnId/work/notAnId")
-//         .expect(404);
-//     });
+    it("called with a non-numeric work ID returns a 404 error", function() {
+      return request(app)
+        .put("/api/minions/notAnId/work/notAnId")
+        .expect(404);
+    });
 
-//     it("called with an invalid work ID returns a 404 error", function() {
-//       return request(app)
-//         .put("/api/minions/450/work/450")
-//         .expect(404);
-//     });
+    it("called with an invalid work ID returns a 404 error", function() {
+      return request(app)
+        .put("/api/minions/450/work/450")
+        .expect(404);
+    });
 
-//     it("called with an invalid ID does not change the database array", function() {
-//       let initialMinionsWorkArray;
-//       return request(app)
-//         .get("/api/minions/2/work")
-//         .then(response => {
-//           initialMinionsWorkArray = response.body;
-//         })
-//         .then(() => {
-//           return request(app)
-//             .put("/api/minions/2/work/notAnId")
-//             .send({ key: "value" });
-//         })
-//         .then(() => {
-//           return request(app).get("/api/minions/2/work");
-//         })
-//         .then(response => response.body)
-//         .then(postRequestWorkArray => {
-//           expect(initialMinionsWorkArray).to.be.deep.equal(
-//             postRequestWorkArray
-//           );
-//         });
-//     });
+    it("called with an invalid ID does not change the database array", function() {
+      let initialMinionsWorkArray;
+      return request(app)
+        .get("/api/minions/2/work")
+        .then(response => {
+          initialMinionsWorkArray = response.body;
+        })
+        .then(() => {
+          return request(app)
+            .put("/api/minions/2/work/notAnId")
+            .send({ key: "value" });
+        })
+        .then(() => {
+          return request(app).get("/api/minions/2/work");
+        })
+        .then(response => response.body)
+        .then(postRequestWorkArray => {
+          expect(initialMinionsWorkArray).to.be.deep.equal(
+            postRequestWorkArray
+          );
+        });
+    });
 
-//     it("returns a 400 if a work ID with the wrong :minionId is requested", function() {
-//       let initialWork;
-//       let updatedWorkInfo;
-//       return request(app)
-//         .get("/api/minions/2/work")
-//         .then(response => response.body)
-//         .then(workArray => {
-//           initialWork = workArray[0];
-//         })
-//         .then(() => {
-//           updatedWorkInfo = Object.assign({}, initialWork, { minionId: 45 });
-//           return request(app)
-//             .put("/api/minions/2/work/1")
-//             .send(updatedWorkInfo)
-//             .expect(400);
-//         });
-//     });
-//   });
+    it("returns a 400 if a work ID with the wrong :minionId is requested", function() {
+      let initialWork;
+      let updatedWorkInfo;
+      return request(app)
+        .get("/api/minions/2/work")
+        .then(response => response.body)
+        .then(workArray => {
+          initialWork = workArray[0];
+        })
+        .then(() => {
+          updatedWorkInfo = Object.assign({}, initialWork, { minionId: 45 });
+          return request(app)
+            .put("/api/minions/2/work/1")
+            .send(updatedWorkInfo)
+            .expect(400);
+        });
+    });
+  });
 
-//   describe("POST /api/minions/:minionId/work", function() {
-//     it("should add a new work item if all supplied information is correct", function() {
-//       let newWorkObject = {
-//         title: "Test",
-//         description: "",
-//         hours: 20,
-//         minionId: "2"
-//       };
-//       return request(app)
-//         .post("/api/minions/2/work")
-//         .send(newWorkObject)
-//         .expect(201)
-//         .then(res => res.body)
-//         .then(createdWork => {
-//           newWorkObject.id = createdWork.id;
-//           expect(newWorkObject).to.be.deep.equal(createdWork);
-//         });
-//     });
-//   });
+  describe("POST /api/minions/:minionId/work", function() {
+    it("should add a new work item if all supplied information is correct", function() {
+      let newWorkObject = {
+        title: "Test",
+        description: "",
+        hours: 20,
+        minionId: "2"
+      };
+      return request(app)
+        .post("/api/minions/2/work")
+        .send(newWorkObject)
+        .expect(201)
+        .then(res => res.body)
+        .then(createdWork => {
+          newWorkObject.id = createdWork.id;
+          expect(newWorkObject).to.be.deep.equal(createdWork);
+        });
+    });
+  });
 
-//   describe("DELETE /api/minions/:minionId/work/:workId", function() {
-//     it("deletes the correct work by id", function() {
-//       let initialWorkArray;
-//       return request(app)
-//         .get("/api/minions/2/work")
-//         .then(response => {
-//           initialWorkArray = response.body;
-//         })
-//         .then(() => {
-//           return request(app)
-//             .delete("/api/minions/2/work/2")
-//             .expect(204);
-//         })
-//         .then(() => {
-//           return request(app).get("/api/minions/2/work");
-//         })
-//         .then(response => response.body)
-//         .then(afterDeleteWorkArray => {
-//           expect(afterDeleteWorkArray).to.not.be.deep.equal(initialWorkArray);
-//           let shouldBeDeletedWork = afterDeleteWorkArray.find(
-//             el => el.id === "2"
-//           );
-//           expect(shouldBeDeletedWork).to.be.undefined;
-//         });
-//     });
+  describe("DELETE /api/minions/:minionId/work/:workId", function() {
+    it("deletes the correct work by id", function() {
+      let initialWorkArray;
+      return request(app)
+        .get("/api/minions/2/work")
+        .then(response => {
+          initialWorkArray = response.body;
+        })
+        .then(() => {
+          return request(app)
+            .delete("/api/minions/2/work/2")
+            .expect(204);
+        })
+        .then(() => {
+          return request(app).get("/api/minions/2/work");
+        })
+        .then(response => response.body)
+        .then(afterDeleteWorkArray => {
+          expect(afterDeleteWorkArray).to.not.be.deep.equal(initialWorkArray);
+          let shouldBeDeletedWork = afterDeleteWorkArray.find(
+            el => el.id === "2"
+          );
+          expect(shouldBeDeletedWork).to.be.undefined;
+        });
+    });
 
-//     it("called with a non-numeric minion ID returns a 404 error", function() {
-//       return request(app)
-//         .delete("/api/minions/notAnId")
-//         .expect(404);
-//     });
+    it("called with a non-numeric minion ID returns a 404 error", function() {
+      return request(app)
+        .delete("/api/minions/notAnId")
+        .expect(404);
+    });
 
-//     it("called with an invalid minion ID returns a 404 error", function() {
-//       return request(app)
-//         .delete("/api/minions/450")
-//         .expect(404);
-//     });
+    it("called with an invalid minion ID returns a 404 error", function() {
+      return request(app)
+        .delete("/api/minions/450")
+        .expect(404);
+    });
 
-//     it("called with a non-numeric work ID returns a 404 error", function() {
-//       return request(app)
-//         .delete("/api/minions/notAnId/work/notAnId")
-//         .expect(404);
-//     });
+    it("called with a non-numeric work ID returns a 404 error", function() {
+      return request(app)
+        .delete("/api/minions/notAnId/work/notAnId")
+        .expect(404);
+    });
 
-//     it("called with an invalid work ID returns a 404 error", function() {
-//       return request(app)
-//         .delete("/api/minions/450/work/450")
-//         .expect(404);
-//     });
-//   });
-// });
+    it("called with an invalid work ID returns a 404 error", function() {
+      return request(app)
+        .delete("/api/minions/450/work/450")
+        .expect(404);
+    });
+  });
+});
